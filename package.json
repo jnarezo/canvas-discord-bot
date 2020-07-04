@@ -1,0 +1,35 @@
+{
+  "name": "canvas-discord-bot",
+  "version": "0.3.0",
+  "description": "A Discord bot that sends notifications for Canvas assignment releases or deadlines!",
+  "main": "index.js",
+  "scripts": {},
+  "engines": {
+    "node": "12.17.0"
+  },
+  "keywords": [
+    "Discord",
+    "Canvas",
+    "LMS",
+    "Bot"
+  ],
+  "author": "Joshua Narezo <jnarezo@ucsd.edu>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jnarezo/canvas-discord-bot.git"
+  },
+  "bugs": {
+    "url": "https://github.com/jnarezo/canvas-discord-bot/issues"
+  },
+  "homepage": "https://github.com/jnarezo/canvas-discord-bot#readme",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^0.19.2",
+    "discord.js": "^12.2.0",
+    "mongodb": "^3.5.8",
+    "node-schedule": "^1.3.2",
+    "winston": "^3.2.1",
+    "winston-daily-rotate-file": "^4.4.2"
+  },
+  "devDependencies": {}
+}
