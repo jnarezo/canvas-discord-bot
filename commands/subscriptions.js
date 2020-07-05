@@ -17,7 +17,7 @@ function showSubscriptions(msg) {
   database.fetchGuildSubs(msg.guild.id).then((subs) => {
     if (subs.length > 0) {
       const embed = new Discord.MessageEmbed()
-          .setColor('#0099FF')
+          .setColor('#D3371E')
           .setTitle('Server Subscriptions')
           .setDescription("These are your server's active course subscriptions:")
       for (const s of subs) {

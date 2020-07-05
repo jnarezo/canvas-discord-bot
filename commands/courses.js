@@ -19,7 +19,7 @@ function showCourses(msg) {
     }
 
     const embed = new Discord.MessageEmbed()
-        .setColor('#B8261C')
+        .setColor('#D3371E')
         .setTitle('Active Courses')
         .setFooter('Track a course by specifying its course ID or name!');
     

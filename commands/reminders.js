@@ -20,7 +20,7 @@ function showReminders(msg) {
     }
 
     const embed = new Discord.MessageEmbed()
-        .setColor('#B8261C')
+        .setColor('#D3371E')
         .setTitle('Server Reminders')
         .setDescription("These are your server's active assignment reminders:")
     for (let i = 0; i < reminders.length; ++i){

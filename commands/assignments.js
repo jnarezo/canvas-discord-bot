@@ -40,7 +40,7 @@ function showAssignments(msg, args) {
       }
 
       const embed = new Discord.MessageEmbed()
-          .setColor('#B8261C')
+          .setColor('#D3371E')
           .setTitle('Upcoming Assignments')
           .setDescription('These are all the assignments in your course with an upcoming due date:')
           .setFooter('Get reminders when an assignment is due with -remind');
