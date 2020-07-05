@@ -1,4 +1,5 @@
-<!-- ![Atelier Banner]() -->
+![Atelier Banner](https://user-images.githubusercontent.com/21177895/86528144-3beddd80-be5a-11ea-9270-478bac8a83d4.png)
+# Atelier
 Atelier is a **Discord reminder bot** with **Canvas LMI integration** to help
 student communities keep track of their assignments and stay on top of their
 classes, together.
@@ -22,8 +23,6 @@ for other students that may want to use Atelier and don't want to self-host.
 ## Self-Hosting
 This is a short guide for anyone that wants to host their own Atelier for
 a few servers and individual Canvas courses.
-
-### Setup
 
 #### Install Node.js
 If you're on **Windows** or **macOS**, download the correct installer from
@@ -81,7 +80,8 @@ into your `config.json`.
 To run Atelier on **Windows**, open the command prompt (cmd) or PowerShell
 in your Atelier folder with the source code.
 
-If you use **macOS** or **Linux**, open the terminal instead.
+If you use **macOS** or **Linux**, open the terminal in your Atelier directory
+instead.
 
 Then enter:
 ```cmd

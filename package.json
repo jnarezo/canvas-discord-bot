@@ -1,6 +1,6 @@
 {
   "name": "canvas-discord-bot",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "A Discord bot that sends notifications for Canvas assignment releases or deadlines!",
   "main": "index.js",
   "scripts": {},

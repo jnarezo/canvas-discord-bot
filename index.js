@@ -5,7 +5,8 @@ const Discord = require('discord.js');
 const logger = require('./util/logger.js');
 const scheduler = require('./util/scheduler.js');
 
-const { prefix, discordToken, adminID } = require('./config.json');
+const { prefix, discordToken, discordUserID } = require('./config.json');
+const database = require('./util/database.js');
 
 const client = new Discord.Client();
 const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
@@ -20,12 +21,13 @@ for (const file of commandFiles) {
 client.on('ready', () => {
   scheduler.init(client);
   winston.info('Restoring reminders and subscriptions..');
+  // database.restore()?
   scheduler.restore();  
   winston.info('Ready.');
 });
 
 client.on('message', (msg) => {
-  if ((msg.author.id != adminID) || !msg.content.startsWith(prefix) || msg.author.bot) return;
+  if ((msg.author.id != discordUserID) || !msg.content.startsWith(prefix) || msg.author.bot) return;
 
   // Separate command call and arguments
   const args = msg.content.slice(prefix.length).split(/ +/);
@@ -38,7 +40,7 @@ client.on('message', (msg) => {
   try {
     command.execute(msg, args);
   } catch (e) {
-    winston.warn(`${command.name} execute() failed. `, e);
+    winston.error(`${command.name} execute() failed. `, e);
   }
 });
 
@@ -49,6 +51,7 @@ client.on('guildCreate', (guild) => {
 client.on('guildDelete', (guild) => {
   winston.info('Left guild. Deleting guild data..');
   scheduler.cancelGuildJobs(guild.id);
+  // database.clearGuildData()?
 });
 
 // Start the bot
