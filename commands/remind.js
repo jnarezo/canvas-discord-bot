@@ -7,9 +7,10 @@ const scheduler = require('../util/scheduler.js');
 module.exports = {
   name: 'remind',
   description: `Sends a reminder when an assignment for a course is due to any target channels or the current, and to any mentioned roles.
-    By default, a reminder will be sent 12, 6, and 2 hours before the due-date.`,
+    By default, a reminder will be sent 12, 6, and 2 hours before the due-date.
+    For example: remind #reminders 2d3h 10h biology "my assignment" "Please complete asap!"`,
   aliases: ['reminder', 'remindme', 'setremind', 'setreminder'],
-  usage: '[roles] [channels] <times> <course name> <assignment name> [note]',
+  usage: '[roles] [channels] <times [w|d|h]> <course name> <assignment name> [note]',
   execute(message, args) {
     setReminder(message, args);
   },
@@ -21,20 +22,20 @@ function setReminder(msg, args) {
     return;
   }
 
-  // Parse arguments.
+  // Parse mentions and channels at the front of the message.
   const mentions = new Set();
   const channels = new Set();
-  for (const role of msg.mentions.roles.array()) {
-    mentions.add(role.toString());
-  }
-  for (const ch of msg.mentions.channels.array()) {
-    channels.add(ch.toString());
+  while (args.length != 0 && !!args[0].match(/<(#|@|@&)[0-9]*>/)) {
+    const arg = args.shift();
+    if (arg.charAt(1) === '#') {
+      channels.add(arg);
+    } else {
+      mentions.add(arg);
+    }
   }
   if (channels.size === 0) channels.add(`<#${msg.channel.id}>`);
-  while (args.length != 0 && !!args[0].match(/<(#|@|@&)[0-9]*>/)) {
-    args.shift();
-  }
 
+  // Parse reminder times.
   const times = [];
   while (args.length !== 0 && args[0].match(/[0-9]+[w|d|h]/)) {
     const time = {
@@ -61,18 +62,27 @@ function setReminder(msg, args) {
     times.push(time);
   }
 
-  const blurbs = args.join(' ').split('" "').map(blurb => blurb.replace(/["]/, ''));
-  const courseName = blurbs.shift().toLowerCase().replace(/[^\s\w]/, '');
-  const assignName = blurbs.shift().toLowerCase().replace(/[^\s\w]/, '');
-  const memo = blurbs.shift();
-  winston.debug(courseName);
-  winston.debug(assignName);
-  winston.debug(memo);
-
-  if (blurbs.length > 0) {
-    // user entered more arguments than possible
+  // Use course/assignment name separated by spaces or grouped by double-quotes.
+  let blurbs = [];
+  while (args.length && (blurbs.length < 3)) {
+    let blurb = args.shift();
+    if (blurb.startsWith('"')) {
+      while(args[0] && !blurb.endsWith('"')) {
+       blurb += ` ${args.shift()}`;
+      }
+    }
+    blurbs.push(blurb);
+  }
+  
+  if (blurbs.length < 2) {
+    // user must enter more arguments
     return;
   }
+
+  blurbs = blurbs.map(blurb => blurb.toLowerCase().replace(/[^\s\w]/g, ''));
+  const courseName = blurbs.shift();
+  const assignName = blurbs.shift();
+  const memo = blurbs.shift();
 
   canvas.fetchCourses().then((courses) => {
     const matchCourses = courses.filter(c => !!c.name.toLowerCase().match(new RegExp(courseName, 'g')));
