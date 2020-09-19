@@ -8,6 +8,8 @@ module.exports = {
   restore: restore,
   scheduleReminder: scheduleReminder,
   cancelReminder: cancelReminder,
+  scheduleSubscribe: scheduleSubscribe,
+  cancelSubscribe: cancelSubscribe,
   cancelGuildJobs: cancelGuildJobs,
 }
 
@@ -220,7 +222,7 @@ function createSubscribe(info) {
 
     // Check for new assignments.
     canvas.fetchAssignments(courseID).then((upcoming) => {
-      if (!upcoming) return;
+      if (upcoming === null) return;
 
       const upcomingIDs = [];
       for (const assign of upcoming) {
@@ -252,8 +254,6 @@ function createSubscribe(info) {
               embed.addField(`ID: ${a.id} | Last updated: ${a.updated_at}`, a.name);
             }
             channel.send(mentions, embed);
-          } else {
-            channel.send(mentions + 'No new assignments today!');
           }
         }).catch((e) => {
           winston.warn('Failed to fetch old assignments from the database: ', e);
@@ -261,7 +261,7 @@ function createSubscribe(info) {
       }
 
       database.storeSubscribe(channel, courseID, upcomingIDs).catch((e) => {
-        winston.warn('Could not store a course subscription in the database: ', e);
+        winston.warn('Could not update a course subscription in the database: ', e);
       });
     }).catch((e) => {
       winston.http('Could not fetch course assignments (subscribe): ', e);
