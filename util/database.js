@@ -17,7 +17,7 @@ module.exports = {
 const mongoURI = process.env.DB_URI || '';
 const dbName = process.env.DB_NAME || '';
 
-// TODO: use Collections for reminders/subscriptions
+// TODO: Use Collections for in-memory reminders/subscriptions storage
 const guildStorage = {};
 
 /**
@@ -72,6 +72,11 @@ async function fetchSubscribe(guildID, courseID, newAssigns = null) {
   }
 
   return (guildStorage[guildID]) ? guildStorage[guildID].subscriptions.get(courseID) : null;
+}
+
+// TODO
+async function fetchAllReminders() {
+
 }
 
 async function deleteSubscribe(guildID, courseID) {

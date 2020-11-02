@@ -21,7 +21,6 @@ for (const file of commandFiles) {
 client.on('ready', () => {
   scheduler.init(client);
   winston.info('Restoring reminders and subscriptions..');
-  // database.restore()?
   scheduler.restore();  
   winston.info('Ready.');
 });

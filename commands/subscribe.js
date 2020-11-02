@@ -32,7 +32,7 @@ function subscribe(msg, args) {
 
     const matchCourses = courses.filter(c => !!c.name.toLowerCase().match(new RegExp(courseName, 'g')));
 
-    if (!matchCourses) {
+    if (matchCourses.length === 0) {
       msg.channel.send('No matches. Please check your search criteria.');
       return;
     } else if (matchCourses.length > 1) {

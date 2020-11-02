@@ -19,10 +19,15 @@ function init(discordClient) {
   client = discordClient;
 }
 
-// TODO
+// TODO: Add restore subscriptions.
 function restore() {
   // Restore reminders.
   database.fetchAllReminders().then((reminders) => {
+    if (!reminders) {
+      winston.info('No saved reminders to restore.');
+      return;
+    }
+
     for (const r of reminders) {
       const dueDate = new Date(r.info.due_at);
       const job = createReminder(r.info.guild_id, r.info.assignment_id);
@@ -38,10 +43,10 @@ function restore() {
       if (r.info.times.length === 0) database.deleteReminder(r.info.guild_id, r.info.assignment_id);
     }
   }).catch((e) => {
-    winston.warn('Unable to find / restore any back-up reminders: ', e);
+    winston.warn('Unable to restore back-up info: ', e);
   });
 
-  // Restore subscriptions.
+  // // Restore subscriptions.
   // database.fetchAllSubscriptions().then((subs) => {
   //   for (const s of subs) {
   //     scheduleReminder(s.channelIDs, s.assignmentName);
