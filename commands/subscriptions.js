@@ -21,7 +21,7 @@ function showSubscriptions(msg) {
           .setTitle('Server Subscriptions')
           .setDescription("These are your server's active course subscriptions:")
       for (const s of subs) {
-        embed.addField(`ID: ${s.course_id}`, `**${s.course_name || 'todo'}**`);
+        embed.addField(`ID: ${s.info.course_id}`, `**${s.info.course_name || 'todo'}**`);
       }
       msg.channel.send(embed);
     } else {

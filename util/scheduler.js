@@ -1,7 +1,9 @@
 const schedule = require('node-schedule');
 const winston = require('winston');
+const Discord = require('discord.js');
 
-const database = require("./database");
+const database = require('./database');
+const canvas = require('./canvas');
 
 module.exports = {
   init: init,
@@ -19,7 +21,7 @@ function init(discordClient) {
   client = discordClient;
 }
 
-// TODO: Add restore subscriptions.
+// TODO: Add restore subscriptions/persistence.
 function restore() {
   // Restore reminders.
   database.fetchAllReminders().then((reminders) => {
@@ -107,42 +109,43 @@ function cancelGuildReminders(guildID) {
   });
 }
 
-// TODO
 function scheduleSubscribe(guildID, channelID, course, mentions) {
   // fetch assignments
-  const assignmentIDs = [];
-  // create recurrence rule
-  const rule = new schedule.RecurrenceRule();
-  rule.hour = 6;
-  rule.minute = 0;
-  // create job
-  const info = {
-    guild_id: guildID,
-    course_id: course.id,
-    course_name: course.name,
-    rule: rule,
-    channel_id: channelID,
-    assignment_ids: assignmentIDs,
-    mentions: mentions,
-  }
-  const job = createSubscribe(info);
-  // schedule sub
-  if (job.schedule(rule)) {
-    // database.store
-    database.storeSubscribe(info, job).catch((e) => {
-      winston.warn('Could not back-up a subscription: ', e);
-    });
-    return true;
-  }
-  return false;
+  canvas.fetchAssignments(course.id).then((assigns) => {
+    const assignmentIDs = assigns.map(a => a.id);
+    
+    // create recurrence rule
+    const rule = new schedule.RecurrenceRule();
+    rule.hour = 6;
+    rule.minute = 0;
+    // create job
+    const info = {
+      guild_id: guildID,
+      course_id: course.id,
+      course_name: course.name,
+      rule: rule,
+      channel_id: channelID,
+      assignment_ids: assignmentIDs,
+      mentions: mentions,
+    }
+    const job = createSubscribe(info);
+    // schedule sub
+    if (job.schedule(rule)) {
+      // database.store
+      database.storeSubscribe(info, job).catch((e) => {
+        winston.warn('Could not back-up a subscription: ', e);
+      });
+    }
+  }).catch((e) => {
+    winston.warn('Could not fetch assignments for a new subscribe: ', e);
+  });
 }
 
-// TODO
 function cancelSubscribe(guildID, courseID) {
   database.deleteSubscribe(guildID, courseID).then((removed) => {
     removed.job.cancel();
   }).catch((e) => {
-
+    winston.warn('Could not cancel job: ', e);
   });
 }
 
@@ -216,60 +219,63 @@ function createReminder(guildID, assignID) {
   return rem;
 }
 
-// TODO
 function createSubscribe(info) {
   const sub = new schedule.Job(() => {
-    if (!channel.guild.available || !channel.viewable) {
-      job.cancel();
-      database.removeSubscribe(channel.guild.id, courseID);
-      return;
-    }
-
-    // Check for new assignments.
-    canvas.fetchAssignments(courseID).then((upcoming) => {
-      if (upcoming === null) return;
-
-      const upcomingIDs = [];
-      for (const assign of upcoming) {
-        upcomingIDs.push(assign.id);
+    client.channels.fetch(info.channel_id).then((channel) => {
+      if (!channel.guild.available || !channel.viewable) {
+        job.cancel();
+        database.removeSubscribe(channel.guild.id, info.course_id);
+        return;
       }
-
-      if (upcoming.length > 0) {
-        database.fetchSubscribe(channel.guild.id).then((oldAssigns, roles) => {
-          if (!oldAssigns) return;
-
-          const newAssigns = upcoming.filter(id => !oldAssigns.includes(id));
-          let mentions = '';
-          if (roles) {
-            for (const role of roles) {
-              mentions += role;
+  
+      // Check for new assignments.
+      canvas.fetchAssignments(info.course_id).then((upcoming) => {
+        if (upcoming === null) return;
+  
+        const upcomingIDs = [];
+        for (const assign of upcoming) {
+          upcomingIDs.push(assign.id);
+        }
+  
+        if (upcoming.length > 0) {
+          database.fetchSubscribe(channel.guild.id, info.course_id).then((sub) => {
+            if (!sub.info.assignment_ids) return;
+  
+            const newAssigns = upcoming.filter(a => !sub.info.assignment_ids.includes(a.id));
+            let mentions = '';
+            if (sub.info.mentions) {
+              for (const role of sub.info.mentions) {
+                mentions += role;
+              }
             }
-          }
-
-          // Notify if there are new assignments in the guild's tracked courses.
-          if (newAssigns.length > 0) {
-            const embed = new Discord.MessageEmbed()
-                .setColor('#B8261C')
-                .setTitle('Subscription Update')
-                .setDescription(`You have new assignments for your tracked courses:`)
-                .setTimestamp()
-                .setFooter('Get reminders when an assignment is due with \`remind\`!');
-
-            for (const a of newAssigns) {
-              embed.addField(`ID: ${a.id} | Last updated: ${a.updated_at}`, a.name);
+  
+            // Notify if there are new assignments in the guild's tracked courses.
+            if (newAssigns.length > 0) {
+              const embed = new Discord.MessageEmbed()
+                  .setColor('#B8261C')
+                  .setTitle('Subscription Update')
+                  .setDescription(`You have new assignments for your tracked courses:`)
+                  .setTimestamp()
+                  .setFooter('Get reminders when an assignment is due with \`remind\`!');
+  
+              for (const a of newAssigns) {
+                embed.addField(`ID: ${a.id} | Last updated: ${a.updated_at}`, a.name);
+              }
+              channel.send(mentions, embed);
             }
-            channel.send(mentions, embed);
-          }
-        }).catch((e) => {
-          winston.warn('Failed to fetch old assignments from the database: ', e);
+          }).catch((e) => {
+            winston.warn('Failed to fetch old assignments from the database: ', e);
+          });
+        }
+  
+        database.storeSubscribe(channel, courseID, upcomingIDs).catch((e) => {
+          winston.warn('Could not update a course subscription in the database: ', e);
         });
-      }
-
-      database.storeSubscribe(channel, courseID, upcomingIDs).catch((e) => {
-        winston.warn('Could not update a course subscription in the database: ', e);
+      }).catch((e) => {
+        winston.http('Could not fetch course assignments (subscribe): ', e);
       });
     }).catch((e) => {
-      winston.http('Could not fetch course assignments (subscribe): ', e);
+      winston.warn('Unable to fetch channel (subscribe): ', e);
     });
   });
   return sub;

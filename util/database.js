@@ -51,7 +51,7 @@ async function storeSubscribe(info, job) {
   }
 
   if (!guildStorage[info.guild_id]) createGuildData(info.guild_id);
-  guildStorage[info.guild_id].subscriptions.set(info.course_id, {info: info, job: job});
+  guildStorage[info.guild_id].subscriptions.set(info.course_id, { info: info, job: job });
 }
 
 async function fetchSubscribe(guildID, courseID, newAssigns = null) {
@@ -108,7 +108,7 @@ async function fetchGuildSubs(guildID) {
     return subs;
   }
 
-  return null;
+  return (guildStorage[guildID]) ? [...guildStorage[guildID].subscriptions.values()] : [];
 }
 
 async function storeReminder(info, job) {

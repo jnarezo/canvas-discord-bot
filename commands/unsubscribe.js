@@ -1,7 +1,7 @@
 const winston = require('winston');
 const Discord = require('discord.js');
 
-const database = require('../util/database.js');
+const scheduler = require('../util/scheduler');
 
 module.exports = {
   name: 'unsubscribe',
@@ -19,10 +19,10 @@ function unsubscribe(msg, args) {
     return;
   }
 
-  const numSub = args[0];
-  database.deleteSubscribe(msg.guild.id, numSub).then(() => {
-    msg.react('✅');
-  }).catch((e) => {
-    msg.channel.send('⚠️ An error occurred while unsubscribing. Please check the course ID.');
-  });
+  const courseID = args[0];
+  scheduler.cancelSubscribe(msg.guild.id, courseID);
+  msg.react('✅');
+  //   .catch((e) => {
+  //   msg.channel.send('⚠️ An error occurred while unsubscribing. Please check the course ID.');
+  // });
 }

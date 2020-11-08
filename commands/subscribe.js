@@ -15,11 +15,6 @@ module.exports = {
   },
 };
 
-// Every day at 6AM, send course updates
-const rule = new schedule.RecurrenceRule();
-rule.hour = 6;
-rule.minute = 0;
-
 function subscribe(msg, args) {
   if (!args || args.length < 1) {
     msg.channel.send("Please specify the course's ID.");
@@ -42,9 +37,8 @@ function subscribe(msg, args) {
     }
 
     const matchCourse = matchCourses[0];
-    if (scheduler.scheduleSubscribe(msg.guild.id, msg.channel.id, matchCourse, null)) {
-      msg.react('✅');
-    }
+    scheduler.scheduleSubscribe(msg.guild.id, msg.channel.id, matchCourse, null);
+    msg.react('✅');
   }).catch((e) => {
     msg.channel.send('⚠️ Unable to fetch your courses from Canvas.');
     winston.warn('Unable to fetch courses from subscribe: ', e);
