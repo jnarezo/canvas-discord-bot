@@ -35,14 +35,3 @@ winston.configure({
     // }),
   ]
 });
-
-// winston.loggers.add('category1', {
-//     format: combine(
-//         label({ label: 'category one' }),
-//         json()
-//     ),
-//     transports: [
-//         new winston.transports.Console({ level: 'silly' }),
-//         new winston.transports.File({ filename: 'combined.log' })
-//     ]
-// });

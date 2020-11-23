@@ -15,18 +15,19 @@ module.exports = {
 function showSubscriptions(msg) {
   msg.channel.startTyping();
   database.fetchGuildSubs(msg.guild.id).then((subs) => {
-    if (subs.length > 0) {
-      const embed = new Discord.MessageEmbed()
-          .setColor('#D3371E')
-          .setTitle('Server Subscriptions')
-          .setDescription("These are your server's active course subscriptions:")
-      for (const s of subs) {
-        embed.addField(`ID: ${s.info.course_id}`, `**${s.info.course_name || 'todo'}**`);
-      }
-      msg.channel.send(embed);
-    } else {
+    if (!subs || subs <= 0) {
       msg.channel.send("Looks like you do not have any active subscriptions.");
+      return;
     }
+    
+    const embed = new Discord.MessageEmbed()
+        .setColor('#D3371E')
+        .setTitle('Server Subscriptions')
+        .setDescription("These are your server's active course subscriptions:")
+    for (const s of subs) {
+      embed.addField(`ID: ${s.info.course_id}`, `**${s.info.course_name || 'todo'}**`);
+    }
+    msg.channel.send(embed);
   }).catch((e) => {
     msg.channel.send('It looks like an error occurred when retrieving your subscriptions.');
     winston.http('Fetch guild subs failed: ', e);

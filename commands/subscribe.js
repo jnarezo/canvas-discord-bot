@@ -1,6 +1,4 @@
 const winston = require('winston');
-const schedule = require('node-schedule');
-const Discord = require('discord.js');
 
 const canvas = require('../util/canvas.js');
 const scheduler = require('../util/scheduler.js');

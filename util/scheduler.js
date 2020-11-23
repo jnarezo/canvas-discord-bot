@@ -58,30 +58,32 @@ function restore() {
   // });
 }
 
+// TODO: Stop duplicate reminders.
 function scheduleReminder(guildID, course, assignment, timesBefore, channels, mentions, memo) {
   const dueDate = new Date(assignment.due_at);
   timesBefore.sort((a, b) => ((b.weeks - a.weeks) || (b.days - a.days) || (b.hours - a.hours)));
 
   const info = {
     guild_id: guildID,
-    times: timesBefore,
-    channel_ids: channels,
-    mentions: mentions,
-    memo: memo,
     course_id: course.id,
     course_name: course.name,
     assignment_id: assignment.id,
     assignment_name: assignment.name,
     due_at: assignment.due_at,
+    times: timesBefore,
+    channel_ids: channels,
+    mentions: mentions,
+    memo: memo,
   }
-  const job = createReminder(guildID, assignment.id);
+  const job = createReminder(info);
+  const reminder = { info: info, job: job };
 
   // Initialize. Try to schedule reminder at the closest time.
   while (timesBefore.length > 0) {
     const date = beforeDate(dueDate, timesBefore[0]);
     winston.debug('Trying to set reminder at remDate %s, while dueDate at %s.', date, dueDate);
     if (job.schedule(date)) {
-      database.storeReminder(info, job).catch((e) => {
+      database.storeReminder(guildID, assignment.id, reminder).catch((e) => {
         winston.warn('Could not back-up a reminder: ', e);
       });
       winston.info('Set / updated a reminder at %s, due at %s.', date, dueDate);
@@ -93,8 +95,8 @@ function scheduleReminder(guildID, course, assignment, timesBefore, channels, me
   return false;
 }
 
-function cancelReminder(guildID, courseID, assignID) {
-  database.deleteReminder(guildID, courseID, assignID).then((removed) => {
+function cancelReminder(guildID, assignID) {
+  database.deleteReminder(guildID, assignID).then((removed) => {
     removed.job.cancel();
   }).catch((e) => {
     winston.warn('Unable to cancel reminder in scheduler: ', e);
@@ -109,6 +111,7 @@ function cancelGuildReminders(guildID) {
   });
 }
 
+// TODO: Stop duplicate subscriptions.
 function scheduleSubscribe(guildID, channelID, course, mentions) {
   // fetch assignments
   canvas.fetchAssignments(course.id).then((assigns) => {
@@ -130,10 +133,11 @@ function scheduleSubscribe(guildID, channelID, course, mentions) {
       mentions: mentions,
     }
     const job = createSubscribe(info);
+    const sub = { info: info, job: job };
+
     // schedule sub
     if (job.schedule(rule)) {
-      // database.store
-      database.storeSubscribe(info, job).catch((e) => {
+      database.storeSubscribe(guildID, course.id, sub).catch((e) => {
         winston.warn('Could not back-up a subscription: ', e);
       });
     }
@@ -143,8 +147,8 @@ function scheduleSubscribe(guildID, channelID, course, mentions) {
 }
 
 function cancelSubscribe(guildID, courseID) {
-  database.deleteSubscribe(guildID, courseID).then((removed) => {
-    removed.job.cancel();
+  database.deleteSubscribe(guildID, courseID).then((sub) => {
+    sub.job.cancel();
   }).catch((e) => {
     winston.warn('Could not cancel job: ', e);
   });
@@ -170,18 +174,18 @@ function cancelGuildJobs(guildID) {
 
 // ------------------------------------------------------------------
 
-function createReminder(guildID, assignID) {
+function createReminder(info) {
   const rem = new schedule.Job(() => {
-    database.fetchReminder(guildID, assignID).then((r) => {
-      if (!r.info) throw 'Reminder is not present anymore.';
+    // TODO: resolve multiple channels IDs with Promise.all(?) or accumulation
+
+    database.fetchReminder(info.guild_id, info.assignment_id).then((r) => {
+      if (!r) throw 'Reminder is not present anymore.';
 
       // Format the reminder.
       let message = '';
       if (r.info.mentions) {
-        for (const m of r.info.mentions) {
-          message = `${m} ` + message;
-        }
-        message = message + '\n';
+        const mentions = r.info.mentions.join(' ');
+        message = mentions + '\n' + message;
       }
       message = message + `**${r.info.assignment_name}** is due in **${formatTime(r.info.times.shift())}**!`;
       if (r.info.memo) message = message + `\n${r.info.memo}`;
@@ -224,28 +228,22 @@ function createSubscribe(info) {
   const sub = new schedule.Job(() => {
     client.channels.fetch(info.channel_id).then((channel) => {
       if (!channel.guild.available || !channel.viewable) {
-        job.cancel();
+        sub.cancel();
         database.removeSubscribe(channel.guild.id, info.course_id);
         return;
       }
   
       // Check for new assignments.
-      canvas.fetchAssignments(info.course_id).then((upcoming) => {
-        if (upcoming === null) return;
+      canvas.fetchAssignments(info.course_id).then((curAssignments) => {
+        if (curAssignments === null) return;
   
-        if (upcoming.length > 0) {
+        if (curAssignments.length > 0) {
           database.fetchSubscribe(channel.guild.id, info.course_id).then((sub) => {
-            if (sub.info.assignment_ids === null) {
-              winston.info('was null');
-              return;
-            }
-            const newAssigns = upcoming.filter(a => !sub.info.assignment_ids.includes(a.id));
+            if (!sub) return;
+
+            const newAssigns = curAssignments.filter(a => !sub.info.assignment_ids.includes(a.id));
             let mentions = '';
-            if (sub.info.mentions) {
-              for (const role of sub.info.mentions) {
-                mentions += role;
-              }
-            }
+            if (sub.info.mentions) mentions = sub.info.mentions.join('');
   
             // Notify if there are new assignments in the guild's tracked courses.
             if (newAssigns.length > 0) {
@@ -261,12 +259,12 @@ function createSubscribe(info) {
               }
               channel.send(mentions, embed);
             }
-            info.assignment_ids = upcoming.map(a => a.id);
+            info.assignment_ids = curAssignments.map(a => a.id);
           }).catch((e) => {
             winston.warn('Failed to fetch old assignments from the database: ', e);
           });
         } else {
-          info.assignment_ids = upcoming.map(a => a.id);
+          info.assignment_ids = curAssignments.map(a => a.id);
         }
       }).catch((e) => {
         winston.http('Could not fetch course assignments (subscribe): ', e);

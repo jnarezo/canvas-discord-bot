@@ -1,4 +1,3 @@
-const schedule = require('node-schedule');
 const winston = require('winston');
 
 const canvas = require('../util/canvas.js');

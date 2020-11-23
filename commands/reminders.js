@@ -14,7 +14,7 @@ module.exports = {
 
 function showReminders(msg) {
   database.fetchGuildReminders(msg.guild.id).then((reminders) => {
-    if (reminders.length <= 0) {
+    if (!reminders || reminders.length <= 0) {
       msg.channel.send("Looks like you do not have any active reminders.");
       return;
     }
