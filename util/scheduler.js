@@ -114,10 +114,11 @@ function scheduleSubscribe(guildID, channelID, course, mentions) {
   canvas.fetchAssignments(course.id).then((assigns) => {
     const assignmentIDs = assigns.map(a => a.id);
     
-    // create recurrence rule
+    // create recurrence rule - 6:00AM every day
     const rule = new schedule.RecurrenceRule();
-    rule.hour = 6;
+    rule.hour = 14;
     rule.minute = 0;
+    rule.second = 0;
     // create job
     const info = {
       guild_id: guildID,
@@ -232,15 +233,12 @@ function createSubscribe(info) {
       canvas.fetchAssignments(info.course_id).then((upcoming) => {
         if (upcoming === null) return;
   
-        const upcomingIDs = [];
-        for (const assign of upcoming) {
-          upcomingIDs.push(assign.id);
-        }
-  
         if (upcoming.length > 0) {
           database.fetchSubscribe(channel.guild.id, info.course_id).then((sub) => {
-            if (!sub.info.assignment_ids) return;
-  
+            if (sub.info.assignment_ids === null) {
+              winston.info('was null');
+              return;
+            }
             const newAssigns = upcoming.filter(a => !sub.info.assignment_ids.includes(a.id));
             let mentions = '';
             if (sub.info.mentions) {
@@ -263,14 +261,13 @@ function createSubscribe(info) {
               }
               channel.send(mentions, embed);
             }
+            info.assignment_ids = upcoming.map(a => a.id);
           }).catch((e) => {
             winston.warn('Failed to fetch old assignments from the database: ', e);
           });
+        } else {
+          info.assignment_ids = upcoming.map(a => a.id);
         }
-  
-        database.storeSubscribe(channel, courseID, upcomingIDs).catch((e) => {
-          winston.warn('Could not update a course subscription in the database: ', e);
-        });
       }).catch((e) => {
         winston.http('Could not fetch course assignments (subscribe): ', e);
       });
