@@ -13,7 +13,6 @@ module.exports = {
 };
 
 function showSubscriptions(msg) {
-  msg.channel.startTyping();
   database.fetchGuildSubs(msg.guild.id).then((subs) => {
     if (!subs || subs <= 0) {
       msg.channel.send("Looks like you do not have any active subscriptions.");
