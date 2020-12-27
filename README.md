@@ -42,7 +42,6 @@ $ pacman -S nodejs npm
 #### Download Atelier
 Download the source code zip or clone from our
 GitHub [repository](https://github.com/jnarezo/canvas-discord-bot)
-<!-- TODO?: GitHub [releases]() -->
 and extract the files to a new folder or directory.
 
 #### Link Atelier to your Canvas Account
@@ -99,10 +98,3 @@ Daily log files will be saved in your bot's folder.
 offline. When you restart your bot, it will still send any upcoming reminders.
 If a reminder was supposed to be sent while your bot was offline,
 it will **NOT** be sent at all.
-
----
-
-**Have a suggestion or found a bug?** [Contact us]() and we'll try to get to you soon!
-
-<!-- Feeling generous? You can buy me a coffee (or boba) through [PayPal]().
-Thank you, I really appreciate it! 🙌 -->
