@@ -31,5 +31,5 @@ jobs:
           name: Deploy to GCP compute engine instance.
           command: |
             which scp
-            gcloud compute scp --quiet --recurse . 123456-circle@instance-1:~/atelier --zone ${GOOGLE_COMPUTE_ZONE}
+            gcloud compute scp --quiet --recurse ~/dist 123456-circle@instance-1:~/atelier --zone ${GOOGLE_COMPUTE_ZONE}
             gcloud compute ssh --quiet --zone ${GOOGLE_COMPUTE_ZONE} 123456-circle@instance-1 --command 'cd ~/atelier && cp ~/config.json config.json && npm install && nohup node index.js &'
