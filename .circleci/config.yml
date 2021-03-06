@@ -1,0 +1,34 @@
+version: 2.1
+
+orbs:
+  node: circleci/node@4.2.0
+  gcp-cli: circleci/gcp-cli@2.1.0
+
+workflows:
+  test-deploy:
+    jobs:
+    #  - node/test
+      - deploy
+
+jobs:
+  deploy:
+    docker:
+      - image: circleci/python:3.7.4
+    working_directory: ~/dist
+    steps:
+      - checkout
+      - run:
+          name: Decode keys for GCP gcloud CLI.
+          command: |
+            echo ${GCP_PROJECT_KEY} | base64 --decode --ignore-garbage > ${HOME}/gcloud-service-key.json
+            echo 'export GOOGLE_CLOUD_KEYS=$(cat $HOME/gcloud-service-key.json)' >> $BASH_ENV
+      - gcp-cli/install
+      - gcp-cli/initialize:
+          gcloud-service-key: GOOGLE_CLOUD_KEYS
+          google-project-id: GOOGLE_PROJECT_ID
+          google-compute-zone: GOOGLE_COMPUTE_ZONE
+      - run:
+          name: Deploy to GCP compute engine instance.
+          command: |
+            gcloud compute scp --quiet ./dist 123456-circle@instance-1:~/atelier --zone ${GOOGLE_COMPUTE_ZONE}
+            gcloud compute ssh --quiet --zone ${GOOGLE_COMPUTE_ZONE} 123456-circle@instance-1 --command 'cd ~/atelier && cp ~/config.json config.json && npm install && nohup node index.js &'
