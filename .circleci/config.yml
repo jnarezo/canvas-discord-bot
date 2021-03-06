@@ -18,7 +18,7 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Decode keys for GCP gcloud CLI.
+          name: Decode keys for GCP authentication.
           command: |
             echo ${GCP_PROJECT_KEY} | base64 --decode --ignore-garbage > ${HOME}/gcloud-service-key.json
             echo 'export GOOGLE_CLOUD_KEYS=$(cat $HOME/gcloud-service-key.json)' >> $BASH_ENV
@@ -28,8 +28,8 @@ jobs:
           google-project-id: GOOGLE_PROJECT_ID
           google-compute-zone: GOOGLE_COMPUTE_ZONE
       - run:
-          name: Deploy to GCP compute engine instance.
+          name: Deploy to GCP Compute Engine.
           command: |
             which scp
-            gcloud compute scp --quiet --recurse ~/dist 123456-circle@instance-1:~/atelier --zone ${GOOGLE_COMPUTE_ZONE}
-            gcloud compute ssh --quiet --zone ${GOOGLE_COMPUTE_ZONE} 123456-circle@instance-1 --command 'cd ~/atelier && cp ~/config.json config.json && npm install && nohup node index.js &'
+            gcloud compute scp --quiet --recurse ~/dist ${GOOGLE_COMPUTE_USER}@${GOOGLE_INSTANCE_ID}:~/atelier --zone ${GOOGLE_COMPUTE_ZONE}
+            gcloud compute ssh --quiet --zone ${GOOGLE_COMPUTE_ZONE} ${GOOGLE_COMPUTE_USER}@${GOOGLE_INSTANCE_ID} --command 'cd ~/atelier && cp config.json dist/config.json && cd dist && npm install && nohup node index.js &'
