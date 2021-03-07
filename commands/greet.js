@@ -10,5 +10,5 @@ module.exports = {
 };
 
 function showGreeting(msg, args) {
-  msg.reply("I'm so happy to meet you!");
+  msg.reply("hello!");
 }
