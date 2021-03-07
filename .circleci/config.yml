@@ -32,4 +32,4 @@ jobs:
           command: |
             gcloud compute ssh --quiet --zone ${GOOGLE_COMPUTE_ZONE} ${GOOGLE_COMPUTE_USER}@${GOOGLE_INSTANCE_ID} --command 'kill -s SIGINT `pgrep node` ; [[ ! -d ~/atelier/dist ]] || rm -rf ~/atelier/dist'
             gcloud compute scp --quiet --recurse ~/dist ${GOOGLE_COMPUTE_USER}@${GOOGLE_INSTANCE_ID}:~/atelier --zone ${GOOGLE_COMPUTE_ZONE}
-            gcloud compute ssh --quiet --zone ${GOOGLE_COMPUTE_ZONE} ${GOOGLE_COMPUTE_USER}@${GOOGLE_INSTANCE_ID} --command 'cd ~/atelier && cp config.json dist/config.json && cd dist && npm install && nohup node index.js' &
+            gcloud compute ssh --quiet --zone ${GOOGLE_COMPUTE_ZONE} ${GOOGLE_COMPUTE_USER}@${GOOGLE_INSTANCE_ID} --command 'cd ~/atelier/dist && cp ~/atelier/config.json config.json && npm install && nohup node index.js' &
