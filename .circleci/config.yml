@@ -30,6 +30,7 @@ jobs:
       - run:
           name: Deploy to GCP Compute Engine.
           command: |
-            gcloud compute ssh --quiet --zone ${GOOGLE_COMPUTE_ZONE} ${GOOGLE_COMPUTE_USER}@${GOOGLE_INSTANCE_ID} --command 'kill -s SIGINT `pgrep node` ; [[ ! -d ~/atelier/dist ]] || rm -rf ~/atelier/dist'
+            gcloud compute ssh --quiet --zone ${GOOGLE_COMPUTE_ZONE} ${GOOGLE_COMPUTE_USER}@${GOOGLE_INSTANCE_ID} --command 'kill -2 `pgrep node` ; [[ ! -d ~/atelier/dist ]] || rm -rf ~/atelier/dist'
             gcloud compute scp --quiet --recurse ~/dist ${GOOGLE_COMPUTE_USER}@${GOOGLE_INSTANCE_ID}:~/atelier --zone ${GOOGLE_COMPUTE_ZONE}
-            gcloud compute ssh --quiet --zone ${GOOGLE_COMPUTE_ZONE} ${GOOGLE_COMPUTE_USER}@${GOOGLE_INSTANCE_ID} --command 'cd ~/atelier/dist && cp ~/atelier/config.json config.json && npm install && nohup node index.js' &
+            gcloud compute ssh --quiet --zone ${GOOGLE_COMPUTE_ZONE} ${GOOGLE_COMPUTE_USER}@${GOOGLE_INSTANCE_ID} --command 'cd ~/atelier/dist && cp ~/atelier/config.json config.json && npm install'
+            gcloud compute ssh --quiet --zone ${GOOGLE_COMPUTE_ZONE} ${GOOGLE_COMPUTE_USER}@${GOOGLE_INSTANCE_ID} --command '$? && nohup node index.js' &
