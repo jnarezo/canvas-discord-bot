@@ -16,8 +16,29 @@ module.exports = {
   clearGuildData: clearGuildData,
 }
 
-const mongoURI = process.env.DB_URI || '';
-const dbName = process.env.DB_NAME || '';
+const mongoURI = process.env.MONGODB_URI;
+let client;
+let database;
+
+async function tryMongoConnect() {
+  if (!mongoURI) return false;
+
+  if (!(client && client.isConnected())) {
+    try {
+      client = new MongoClient(mongoURI, {
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+      });
+      await client.connect();
+      database = client.db();
+      winston.info('Connected to MongoDB.');
+    } catch (e) {
+      winston.warn('Cannot connect to the database!');
+      return false;
+    }
+  }
+  return true;
+}
 
 /**
  * Async. Stores a guild's subscription in the remote Mongo database. A guild
@@ -30,11 +51,7 @@ const dbName = process.env.DB_NAME || '';
 async function storeSubscribe(guildID, courseID, subscription) {
   storage.addSubscription(guildID, courseID, subscription);
 
-  if (mongoURI) {
-    winston.verbose('Connecting to database..');
-    const db = await MongoClient.connect(mongoURI);
-    const dbo = db.db(dbName);
-  
+  if (await tryMongoConnect()) {
     const query = {
       guild_id: info.guild_id,
       course_id: info.course_id,
@@ -46,56 +63,45 @@ async function storeSubscribe(guildID, courseID, subscription) {
         courses: info.courses,
       },
     };
-    const result = await dbo.collection('subscriptions').updateOne(query, newSub, { upsert: true });
+    await database.collection('subscriptions').updateOne(query, newSub, { upsert: true });
     winston.verbose('Added a subscription.');
-    db.close();
   }
 }
 
 async function fetchSubscribe(guildID, courseID) {
-  if (mongoURI) {
-    winston.verbose('Connecting to database..');
-    const db = await MongoClient.connect(mongoURI);
-    const dbo = db.db(dbName);
+  if (await tryMongoConnect()) {
     const query = {
       guild_id: guildID,
       course_id: courseID,
     };
-    const sub = await dbo.collection('subscriptions').findOne(query);
+    const sub = await database.collection('subscriptions').findOne(query);
     
     if (newAssigns) {
-      dbo.collection('subscriptions').findOneAndUpdate(query, { $set: { assignments: newAssigns } });
+      database.collection('subscriptions').findOneAndUpdate(query, { $set: { assignments: newAssigns } });
     }
-    db.close();
+    return sub;
   }
 
   return storage.getSubscription(guildID, courseID);
 }
 
 async function deleteSubscribe(guildID, courseID) {
-  if (mongoURI) {
+  if (await tryMongoConnect()) {
     winston.verbose('Connecting to database..');
-    const db = await MongoClient.connect(mongoURI);
-    const dbo = db.db(dbName);
     const query = {
       guild_id: guildID,
       course_id: courseID,
     };
-    await dbo.collection('subscriptions').deleteOne(query);
-    db.close();
+    await database.collection('subscriptions').deleteOne(query);
   }
 
   return storage.deleteSubscription(guildID, courseID);
 }
 
 async function fetchGuildSubs(guildID) {
-  if (mongoURI) {
-    winston.verbose('Connecting to database..');
-    const db = await MongoClient.connect(mongoURI);
-    const dbo = db.db(dbName);
+  if (await tryMongoConnect()) {
     const query = { guild_id: guildID };
-    const subs = await dbo.collection('subscriptions').find(query).toArray();
-    db.close();
+    const subs = await database.collection('subscriptions').find(query).toArray();
     return subs;
   }
 
@@ -105,52 +111,50 @@ async function fetchGuildSubs(guildID) {
 async function storeReminder(guildID, assignID, reminder) {
   storage.addReminder(guildID, assignID, reminder);
 
-  if (mongoURI) {
-    winston.verbose('Connecting to database..');
-    const db = await MongoClient.connect(mongoURI);
-    const dbo = db.db(dbName);
-
-    const query = {
-      guild_id: info.guild_id,
-      assignment_id: info.assignment_id,
-    };
-    const newRem = {
-      $set: {
-        info: info,
-      }
-    };
-    const result = await dbo.collection('reminders').updateOne(query, newRem, { upsert: true });
-    winston.verbose('Added a reminder.');
-    db.close();
-  }
-}
-
-async function fetchReminder(guildID, assignID) {
-  return storage.getReminder(guildID, assignID);
-}
-
-async function deleteReminder(guildID, assignID) {
-  if (mongoURI) {
-    const db = await MongoClient.connect(mongoURI);
-    const dbo = db.db(dbName);
+  if (await tryMongoConnect()) {
     const query = {
       guild_id: guildID,
       assignment_id: assignID,
     };
-    await dbo.collection('reminders').deleteOne(query);
-    db.close();
+    const newRem = {
+      $set: {
+        info: reminder.info,
+      },
+    };
+    await database.collection('reminders').updateOne(query, newRem, { upsert: true });
+    winston.verbose('Added a reminder.');
+  }
+}
+
+async function fetchReminder(guildID, assignID) {
+  if (await tryMongoConnect()) {
+    const query = {
+      guild_id: guildID,
+      assignment_id: assignID,
+    };
+    const reminder = await database.collection('reminders').findOne(query);
+    return reminder;
+  }
+
+  return storage.getReminder(guildID, assignID);
+}
+
+async function deleteReminder(guildID, assignID) {
+  if (await tryMongoConnect()) {
+    const query = {
+      guild_id: guildID,
+      assignment_id: assignID,
+    };
+    await database.collection('reminders').deleteOne(query);
   }
 
   return storage.deleteReminder(guildID, assignID);
 }
 
 async function fetchGuildReminders(guildID) {
-  if (mongoURI) {
-    const db = await MongoClient.connect(mongoURI);
-    const dbo = db.db(dbName);
+  if (await tryMongoConnect()) {
     const query = { guild_id: guildID };
-    const reminders = await dbo.collection('reminders').find(query).toArray();
-    db.close();
+    const reminders = await database.collection('reminders').find(query).toArray();
     return reminders;
   }
 
@@ -158,11 +162,8 @@ async function fetchGuildReminders(guildID) {
 }
 
 async function fetchAllReminders() {
-  if (mongoURI) {
-    const db = await MongoClient.connect(mongoURI);
-    const dbo = db.db(dbName);
-    const reminders = await dbo.collection('reminders').find({}).toArray();
-    db.close();
+  if (await tryMongoConnect()) {
+    const reminders = await database.collection('reminders').find({}).toArray();
     return reminders;
   }
 
@@ -184,13 +185,10 @@ async function fetchGuildData(guildID) {
 }
 
 async function clearGuildData(guildID) {
-  if (mongoURI) {
-    const db = await MongoClient.connect(mongoURI);
-    const dbo = db.db(dbName);
+  if (await tryMongoConnect()) {
     const query = { guild_id: guildID };
-    await dbo.collection('subscriptions').deleteMany(query);
-    await dbo.collection('reminders').deleteMany(query);
-    db.close();
+    await database.collection('subscriptions').deleteMany(query);
+    await database.collection('reminders').deleteMany(query);
   }
 
   return storage.deleteGuildData(guildID);
