@@ -14,7 +14,7 @@ module.exports = {
   deleteSubscribe: deleteSubscribe,
   fetchGuildSubs: fetchGuildSubs,
   clearGuildData: clearGuildData,
-}
+};
 
 const mongoURI = process.env.MONGODB_URI;
 let client;
@@ -53,14 +53,14 @@ async function storeSubscribe(guildID, courseID, subscription) {
 
   if (await tryMongoConnect()) {
     const query = {
-      guild_id: info.guild_id,
-      course_id: info.course_id,
+      guild_id: guildID,
+      course_id: courseID,
     };
     const newSub = {
       $set: {
-        rule: info.rule,
-        channel_id: info.channel_id,
-        courses: info.courses,
+        rule: subscription.info.rule,
+        channel_id: subscription.info.channel_id,
+        courses: subscription.info.courses,
       },
     };
     await database.collection('subscriptions').updateOne(query, newSub, { upsert: true });
@@ -76,9 +76,9 @@ async function fetchSubscribe(guildID, courseID) {
     };
     const sub = await database.collection('subscriptions').findOne(query);
     
-    if (newAssigns) {
-      database.collection('subscriptions').findOneAndUpdate(query, { $set: { assignments: newAssigns } });
-    }
+    // if (newAssigns) {
+    //   database.collection('subscriptions').findOneAndUpdate(query, { $set: { assignments: newAssigns } });
+    // }
     return sub;
   }
 

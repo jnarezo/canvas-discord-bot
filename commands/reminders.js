@@ -15,14 +15,14 @@ module.exports = {
 function showReminders(msg) {
   database.fetchGuildReminders(msg.guild.id).then((reminders) => {
     if (!reminders || reminders.length <= 0) {
-      msg.channel.send("Looks like you do not have any active reminders.");
+      msg.channel.send('Looks like you do not have any active reminders.');
       return;
     }
 
     const embed = new Discord.MessageEmbed()
-        .setColor('#D3371E')
-        .setTitle('Server Reminders')
-        .setDescription("These are your server's active assignment reminders:")
+      .setColor('#D3371E')
+      .setTitle('Server Reminders')
+      .setDescription('These are your server\'s active assignment reminders:');
     for (let i = 0; i < reminders.length; ++i){
       embed.addField(`${reminders[i].info.course_name || ''}`, `**${i+1}.** ${reminders[i].info.assignment_name}`);
     }

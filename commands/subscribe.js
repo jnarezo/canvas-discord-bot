@@ -15,7 +15,7 @@ module.exports = {
 
 function subscribe(msg, args) {
   if (!args || args.length < 1) {
-    msg.channel.send("Please specify the course's ID.");
+    msg.channel.send('Please specify the course\'s ID.');
     return;
   }
 

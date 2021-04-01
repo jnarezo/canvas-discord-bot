@@ -15,7 +15,7 @@ module.exports = {
 
 function showAssignments(msg, args) {
   if (!args || args.length < 1) {
-    msg.channel.send("Please specify a course by name.");
+    msg.channel.send('Please specify a course by name.');
     return;
   }
 
@@ -40,10 +40,10 @@ function showAssignments(msg, args) {
       }
 
       const embed = new Discord.MessageEmbed()
-          .setColor('#D3371E')
-          .setTitle('Upcoming Assignments')
-          .setDescription('These are all the assignments in your course with an upcoming due date:')
-          .setFooter('Get reminders when an assignment is due with -remind');
+        .setColor('#D3371E')
+        .setTitle('Upcoming Assignments')
+        .setDescription('These are all the assignments in your course with an upcoming due date:')
+        .setFooter('Get reminders when an assignment is due with -remind');
 
       for (const a of assignments) {
         embed.addField(a.name, `Due at: ${new Date(a.due_at)}`);

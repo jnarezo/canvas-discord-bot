@@ -2,6 +2,6 @@
   "prefix": "-",
   "discordUserID": "",
   "discordToken": "",
-  "canvasDomain": "https://your-school.instructure.com/",
+  "canvasDomain": "https://<your-school>.instructure.com/",
   "canvasToken": ""
 }

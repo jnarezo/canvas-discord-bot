@@ -17,7 +17,7 @@ module.exports = {
 
 function setReminder(msg, args) {
   if (!args || args.length < 3) {
-    msg.channel.send("Please specify the course's ID and assignment's ID. A reminder note is optional.");
+    msg.channel.send('Please specify the course\'s ID and assignment\'s ID. A reminder note is optional.');
     return;
   }
 
@@ -45,17 +45,17 @@ function setReminder(msg, args) {
     const units = args.shift().match(/[0-9]+[w|d|h]/);
     for (const u of units) {
       switch (u.slice(-1)) {
-        case 'w':
-          time.months = parseInt(u.slice(0, u.length-1));
-          break;
-        case 'd':
-          time.days = parseInt(u.slice(0, u.length-1));
-          break;
-        case 'h':
-          time.hours = parseInt(u.slice(0, u.length-1));
-          break;
-        default:
-          return;
+      case 'w':
+        time.months = parseInt(u.slice(0, u.length-1));
+        break;
+      case 'd':
+        time.days = parseInt(u.slice(0, u.length-1));
+        break;
+      case 'h':
+        time.hours = parseInt(u.slice(0, u.length-1));
+        break;
+      default:
+        return;
       }
     }
     times.push(time);
@@ -67,7 +67,7 @@ function setReminder(msg, args) {
     let blurb = args.shift();
     if (blurb.startsWith('"')) {
       while(args[0] && !blurb.endsWith('"')) {
-       blurb += ` ${args.shift()}`;
+        blurb += ` ${args.shift()}`;
       }
     }
     blurbs.push(blurb);
@@ -114,7 +114,7 @@ function setReminder(msg, args) {
         return;
       }
 
-      msg.channel.send("This assignment's due date is too close or has already passed! 🕒");
+      msg.channel.send('This assignment\'s due date is too close or has already passed! 🕒');
     }).catch((e) => {
       msg.channel.send('⚠️ Could not find the specified assignment. Please check your search criteria.');
       winston.http('Fetch assignment failed: ', e);

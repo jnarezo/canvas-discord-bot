@@ -14,14 +14,14 @@ module.exports = {
 function showCourses(msg) {
   canvas.fetchCourses().then((courses) => {
     if (courses.length <= 0) {
-      msg.channel.send("Looks like you're not in any active courses at the moment.");
+      msg.channel.send('Looks like you\'re not in any active courses at the moment.');
       return;
     }
 
     const embed = new Discord.MessageEmbed()
-        .setColor('#D3371E')
-        .setTitle('Active Courses')
-        .setFooter('Track a course by specifying its course ID or name!');
+      .setColor('#D3371E')
+      .setTitle('Active Courses')
+      .setFooter('Track a course by specifying its course ID or name!');
     
     let desc = 'These are your active courses whose assignments you can track:\n';
     for (const c of courses) {

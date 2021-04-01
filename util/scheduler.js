@@ -13,7 +13,7 @@ module.exports = {
   scheduleSubscribe: scheduleSubscribe,
   cancelSubscribe: cancelSubscribe,
   cancelGuildJobs: cancelGuildJobs,
-}
+};
 
 let client = null;
 
@@ -74,7 +74,7 @@ function scheduleReminder(guildID, course, assignment, timesBefore, channels, me
     channel_ids: channels,
     mentions: mentions,
     memo: memo,
-  }
+  };
   const job = createReminder(info);
   const reminder = { info: info, job: job };
 
@@ -131,7 +131,7 @@ function scheduleSubscribe(guildID, channelID, course, mentions) {
       channel_id: channelID,
       assignment_ids: assignmentIDs,
       mentions: mentions,
-    }
+    };
     const job = createSubscribe(info);
     const sub = { info: info, job: job };
 
@@ -168,7 +168,7 @@ function cancelGuildJobs(guildID) {
       }
     }
   }).catch((e) => {
-    winston.error(`Unable to cancel and remove guild (ID: ${guild.id}): `, e);
+    winston.error(`Unable to cancel and remove guild (ID: ${guildID}): `, e);
   });
 }
 
@@ -195,7 +195,7 @@ function createReminder(info) {
         client.channels.fetch(cID.slice(2, -1)).then((ch) => {
           ch.send(message).catch((e) => {
             r.info.channel_ids.shift();
-            winston.verbose("Could not send a channel's reminder: ", e);
+            winston.verbose('Could not send a channel\'s reminder: ', e);
           });
         }).catch((e) => {
           winston.verbose(`Could not fetch channel from channel ID: ${cID}`);
@@ -215,9 +215,9 @@ function createReminder(info) {
         }
       }
 
-      cancelReminder(r.info.guild_id, r.info.assignment_id);
+      cancelReminder(info.guild_id, info.assignment_id);
     }).catch((e) => {
-      cancelReminder(r.info.guild_id, r.info.assignment_id);
+      cancelReminder(info.guild_id, info.assignment_id);
       winston.warn(e);
     });
   });
@@ -248,11 +248,11 @@ function createSubscribe(info) {
             // Notify if there are new assignments in the guild's tracked courses.
             if (newAssigns.length > 0) {
               const embed = new Discord.MessageEmbed()
-                  .setColor('#B8261C')
-                  .setTitle('Subscription Update')
-                  .setDescription(`You have new assignments for your tracked courses:`)
-                  .setTimestamp()
-                  .setFooter('Get reminders when an assignment is due with \`remind\`!');
+                .setColor('#B8261C')
+                .setTitle('Subscription Update')
+                .setDescription('You have new assignments for your tracked courses:')
+                .setTimestamp()
+                .setFooter('Get reminders when an assignment is due with `remind`!');
   
               for (const a of newAssigns) {
                 embed.addField(`ID: ${a.id} | Last updated: ${a.updated_at}`, a.name);
@@ -290,12 +290,12 @@ function formatTime(timeObject) {
     if (timeObject.months > 1) message = message + 's';
   }
   if (timeObject.days) {
-    if (message != '') message = message + ', '
+    if (message != '') message = message + ', ';
     message = message + `${timeObject.days} day`;
     if (timeObject.days > 1) message = message + 's';
   }
   if (timeObject.hours) {
-    if (message != '') message = message + ', and '
+    if (message != '') message = message + ', and ';
     message = message + `${timeObject.hours} hour`;
     if (timeObject.hours > 1) message = message + 's';
   }

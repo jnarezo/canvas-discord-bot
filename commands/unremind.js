@@ -4,7 +4,7 @@ const database = require('../util/database.js');
 
 module.exports = {
   name: 'unremind',
-  description: "Removes an active reminder for the given assignment.",
+  description: 'Removes an active reminder for the given assignment.',
   aliases: ['cancel', 'forget', 'rmremind', 'rmreminder', 'delremind', 'delreminder'],
   usage: '<courseID> <assignmentID>',
   execute(message, args) {

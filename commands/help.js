@@ -19,9 +19,9 @@ for (const file of commandFiles) {
 
 function showHelp(msg, args) {
   const embed = new Discord.MessageEmbed()
-      .setColor('#D3371E')
-      .setTitle('Commands')
-      .setDescription("Here's a list of my available commands:");
+    .setColor('#D3371E')
+    .setTitle('Commands')
+    .setDescription('Here\'s a list of my available commands:');
 
   for (const [name, cmd] of commands) {
     const title = `${name} ${cmd.usage || ''}`;

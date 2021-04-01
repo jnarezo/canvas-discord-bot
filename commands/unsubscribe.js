@@ -5,7 +5,7 @@ const scheduler = require('../util/scheduler');
 
 module.exports = {
   name: 'unsubscribe',
-  description: "Removes your server's assignment updates for the given course.",
+  description: 'Removes your server\'s assignment updates for the given course.',
   aliases: ['unsub', 'unfollow'],
   usage: '<courseID>',
   execute(message, args) {
@@ -15,7 +15,7 @@ module.exports = {
 
 function unsubscribe(msg, args) {
   if (!args || args.length < 1) {
-    msg.channel.send("Please specify the course's ID.");
+    msg.channel.send('Please specify the course\'s ID.');
     return;
   }
 

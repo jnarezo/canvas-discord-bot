@@ -5,7 +5,7 @@ module.exports = {
   fetchCourses: fetchCourses,
   fetchAssignment: fetchAssignment,
   fetchAssignments: fetchAssignments,
-}
+};
 
 const { canvasDomain, canvasToken } = require('../config.json');
 

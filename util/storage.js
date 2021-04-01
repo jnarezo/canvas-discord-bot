@@ -9,7 +9,7 @@ module.exports = {
   getAllReminders: getAllReminders,
   getGuildData: getGuildData,
   deleteGuildData: deleteGuildData,
-}
+};
 
 const cache = {};
 
@@ -48,7 +48,7 @@ function getAllSubscriptions(guildID) {
 }
 
 function getAllReminders(guildID) {
-  return (cache[guildID]) ? [...cache[guildID].reminders.values()] : undefined
+  return (cache[guildID]) ? [...cache[guildID].reminders.values()] : undefined;
 }
 
 function getGuildData(guildID) {
@@ -67,5 +67,5 @@ function createGuildData(guildID) {
   cache[guildID] = {
     reminders: new Map(),
     subscriptions: new Map(),
-  }
+  };
 }

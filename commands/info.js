@@ -11,10 +11,10 @@ module.exports = {
 
 function showInfo(msg, args) {
   const embed = new Discord.MessageEmbed()
-      .setColor('#D3371E')
-      .setTitle('Atelier Open-Source')
-      .setDescription('A bot designed to help educational Discord communities stay ahead of the game.')
-      // TDOO: .setThumbnail('')
+    .setColor('#D3371E')
+    .setTitle('Atelier Open-Source')
+    .setDescription('A bot designed to help educational Discord communities stay ahead of the game.');
+  // TDOO: .setThumbnail('')
 
   msg.channel.send(embed);
 }

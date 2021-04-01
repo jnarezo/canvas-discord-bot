@@ -15,14 +15,14 @@ module.exports = {
 function showSubscriptions(msg) {
   database.fetchGuildSubs(msg.guild.id).then((subs) => {
     if (!subs || subs <= 0) {
-      msg.channel.send("Looks like you do not have any active subscriptions.");
+      msg.channel.send('Looks like you do not have any active subscriptions.');
       return;
     }
     
     const embed = new Discord.MessageEmbed()
-        .setColor('#D3371E')
-        .setTitle('Server Subscriptions')
-        .setDescription("These are your server's active course subscriptions:")
+      .setColor('#D3371E')
+      .setTitle('Server Subscriptions')
+      .setDescription('These are your server\'s active course subscriptions:');
     for (const s of subs) {
       embed.addField(`ID: ${s.info.course_id}`, `**${s.info.course_name || 'todo'}**`);
     }
