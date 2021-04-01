@@ -1,5 +1,4 @@
 const axios = require('axios');
-const winston = require('winston');
 
 module.exports = {
   fetchCourse: fetchCourse,
