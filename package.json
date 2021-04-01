@@ -4,7 +4,9 @@
   "description": "A Discord bot that sends notifications for Canvas assignment releases or deadlines!",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "lint": "eslint . --ext .js",
+    "test": "npm run lint"
   },
   "engines": {
     "node": "12.17.0"
@@ -33,5 +35,7 @@
     "winston": "^3.2.1",
     "winston-daily-rotate-file": "^4.4.2"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "eslint": "^7.23.0"
+  }
 }

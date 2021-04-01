@@ -7,8 +7,8 @@ orbs:
 workflows:
   test-deploy:
     jobs:
-    #  - node/test
-      - deploy
+      - node/test
+      # - deploy
 
 jobs:
   deploy:
